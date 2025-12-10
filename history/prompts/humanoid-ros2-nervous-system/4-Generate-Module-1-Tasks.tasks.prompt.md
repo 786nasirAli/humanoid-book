@@ -1,0 +1,46 @@
+---
+run karoid: 4
+title: Generate-Module-1-Tasks
+stage: tasks
+date: 2025-12-07
+surface: agent
+model: gpt-4o
+feature: humanoid-ros2-nervous-system
+branch: 1-humanoid-ros2-nervous-system
+user: user
+command: /sp.tasks
+labels: [tasks, planning, robotics, ros2, humanoid, ai-book]
+links:
+  spec: specs/1-humanoid-ros2-nervous-system/spec.md
+  ticket: null
+  adr: null
+  pr: null
+files:
+ - specs/1-humanoid-ros2-nervous-system/tasks.md
+tests:
+ - none
+---
+
+## Prompt
+
+/sp.tasks
+Context for task generation: Module: Module 1 — The Robotic Nervous System (ROS 2) Method: Tree-of-Thought (ToT) style external planning: - For each research/implementation task, Agent will: 1. GENERATE candidate approaches / sources / examples (diverse branches) 2. EVALUATE branches against acceptance criteria (credibility, relevance) 3. SELECT best branch and PRODUCE the required output - This external ToT pattern is recorded in task notes so human reviewers can see the decision trail. Phase 1 — Foundations Research (ROS 2 Basics) Task 1.1: Gather candidate canonical sources (ToT: generate branches) Duration: 20 min Depends on: None ToT steps: - Branch A: Official ROS 2 docs (ros.org, ROS 2 tutorials) - Branch B: ROS Enhancement Proposals / REP documents - Branch C: Academic papers/tutorials on ROS 2 middleware Acceptance: - "5+ candidate sources collected across branches A–C; each source annotated with short reason (why credible)" Output: - bibliography/module1/sources_candidates.md (includes branch labels and short eval notes) Task 1.2: Evaluate & select top ROS 2 fundamentals (ToT: evaluate branches) Duration: 15 min Depends on: Task 1.1 ToT steps: - Score each candidate on relevance, recency, authority - Select top 5 for core principles Acceptance: - "Top 5 sources selected and scored; mapping from each source → covered ROS 2 concept (Nodes, Topics, Services, QoS)" Output: - bibliography/module1/selected_core_sources.md Task 1.3: Extract and record 3–5 key ROS 2 principles (synthesis) Duration: 15 min Depends on: Task 1.2 ToT steps: - For each selected source, extract 1–2 crisp principles and an illustrative quote/line Acceptance: - "3–5 principles documented, each with source attribution and 1-sentence explanation" Output: - notes/module1/core_principles.md — CHECKPOINT 1 — (Human reviews selected sources + principles) Phase 2 — Agent Bridge & Messaging Models Task 2.1: Generate rclpy implementation approaches (ToT: generate code branches) Duration: 20 min Depends on: Task 1.3 ToT steps: - Branch A: Simple publisher/subscriber example (single-threaded executor) - Branch B: Multi-node executor with callback groups - Branch C: Action servers for long-running commands Acceptance: - "At least 3 candidate code approaches documented with pros/cons and when to use each" Output: - design/module1/rclpy_approaches.md (includes small pseudocode snippets) Task 2.2: Pick best rclpy branch & produce minimal runnable snippet Duration: 25 min Depends on: Task 2.1 ToT steps: - Evaluate branches for beginner clarity and humanoid relevance - Choose branch and write runnable rclpy snippet (<=40 lines) Acceptance: - "Runnable rclpy example that can be copy-pasted; includes instructions to run (ros2 run / python3 file)" Output: - code/module1/rclpy_agent_bridge.py Task 2.3: Research messaging patterns for humanoid control (Topics vs Actions vs Services) Duration: 15 min Depends on: Task 2.2 ToT steps: - Generate comparative branches: control-loop (Topics), command-ack (Services), long-goal (Actions) - Evaluate latency/reliability tradeoffs Acceptance: - "Clear decision table showing recommended message pattern for: motor commands, sensor streams, high-level goals" Output: - notes/module1/messaging_patterns.md — CHECKPOINT 2 — (Human reviews rclpy snippet + messaging decision table) Phase 3 — URDF for Humanoids Task 3.1: Generate URDF learning branches and example targets Duration: 20 min Depends on: Task 1.3 ToT steps: - Branch A: Minimal humanoid skeleton (torso + 2 legs + 2 arms + head) - Branch B: Detailed humanoid with inertial & visual sensors - Branch C: XACRO parameterized humanoid template Acceptance: - "3 candidate URDF approaches documented with tradeoffs and sample snippet references" Output: - design/module1/urdf_branches.md Task 3.2: Create a minimal humanoid URDF snippet (xacro optional) Duration: 25 min Depends on: Task 3.1 ToT steps: - Select Branch A for beginner clarity, produce <link> and <joint> examples, include one sensor tag Acceptance: - "URDF snippet loads in simulator (theoretical check) and maps to named joints used in examples" Output: - code/module1/humanoid_minimal.urdf (or humanoid_minimal.xacro) + README on how to validate Phase 4 — Integrating Agent → Controller (Putting it Together) Task 4.1: Design end-to-end message flow diagram (text + ASCII diagram) Duration: 20 min Depends on: Task 2.3, Task 3.2 ToT steps: - List data sources (sensors) → perception nodes → decision (agent) → controller nodes → actuators - Branch for including feedback loop and QoS settings Acceptance: - "One-page diagram + short narrative showing example message names, types, and QoS choices" Output: - docs/module1/message_flow.md (ASCII diagram + narrative) Task 4.2: Implement a minimal integration demo (agent publishes cmd → controller subscribes and echoes) Duration: 30 min Depends on: Task 2.2, Task 3.2, Task 4.1 ToT steps: - Use chosen rclpy snippet as agent, subscribe on controller that prints/validates received commands Acceptance: - "Two scripts (agent + controller) that run locally and show message exchange in console; README with run steps" Output: - demo/module1/agent_cmd_pub.py - demo/module1/controller_echo.py - demo/module1/README.md — CHECKPOINT 3 — (Human runs demo, verifies messages and URDF mapping) Phase 5 — Documentation, Examples, and Validation Task 5.1: Write Module 1 narrative sections (Foundations, Agent Bridge, URDF, Integration) Duration: 45 min Depends on: Checkpoint 2 completion (research + code validated) ToT steps: - For each section: generate outline → pick best explanatory branch → write 300–500 words with embedded code snippets Acceptance: - "Each of 4 sections ≥300 words, code snippets embedded, citations to selected sources" Output: - draft/module1/module1_draft.md Task 5.2: Citation formatting + quick technical sanity check Duration: 20 min Depends on: Task 5.1 ToT steps: - Ensure all in-text citations map to bibliography; run quick lint on code snippets for syntax Acceptance: - "All citations present and formatted consistently; code snippets free of obvious syntax errors" Output: - draft/module1/module1_formatted.md + bibliography/module1.bib Task 5.3: Final technical review checklist (CRITICAL) Duration: 30 min Depends on: Task 5.2 Checklist to validate: - URDF snippet parsable (no obvious XML errors) - rclpy examples run without import/runtime errors - Message names/types match between agent and controller - Sources/citations present for key claims Acceptance: - "All checklist items PASS or have documented mitigation steps" Output: - review/module1/final_checklist.md — CHECKPOINT 4 (PROJECT COMPLETE) — Notes on Task Sizing & Parallelism: - Most tasks are 15–30 minutes; writing task 5.1 is 45 min (allowed as an exception for synthesis) - Independent tasks that can run in parallel: - Task 2.1 (rclpy approaches) and Task 3.1 (URDF branches) may be researched in parallel - Strict dependencies: code demos require rclpy snippet + URDF mapping before final demo How to use this /sp.tasks: 1. Agent executes each task using the explicit ToT steps and records branch evaluations in the task output file. 2. After each CHECKPOINT, human reviews outputs and APPROVES / REQUESTS FIX. 3. Only after human APPROVAL does Agent proceed to next phase.
+
+## Response snapshot
+
+Successfully generated the tasks.md file for Module 1 - The Robotic Nervous System (ROS 2). The tasks are organized in phases following the user story priority (P1, P2, P3), with setup and foundational phases first. Each task follows the required checklist format with ID, story labels where appropriate, and detailed descriptions with file paths. The tasks cover all aspects of the module: introduction, nodes/topics/services, data flow, Python agent bridge, URDF, and integration. Parallelization opportunities are marked with [P] tags. Dependencies and execution order are clearly documented to ensure proper sequencing of implementation work.
+
+## Outcome
+
+- ✅ Impact: Created comprehensive task list for ROS 2 nervous system module with 55 specific tasks
+- 🧪 Tests: none
+- 📁 Files: specs/1-humanoid-ros2-nervous-system/tasks.md
+- 🔁 Next prompts: Ready for task execution phase
+- 🧠 Reflection: The task list follows all required formatting and organizational guidelines, enabling parallel execution where possible
+
+## Evaluation notes (flywheel)
+
+- Failure modes observed: none
+- Graders run and results (PASS/FAIL): not applicable
+- Prompt variant (if applicable): not applicable
+- Next experiment (smallest change to try): not applicable

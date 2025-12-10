@@ -1,0 +1,81 @@
+# Synthetic Data Pipeline Configuration
+
+# This configuration defines the pipeline for generating synthetic training data
+# using Isaac Sim with domain randomization techniques
+
+pipeline_settings:
+  # General pipeline settings
+  output_directory: "./synthetic_data_output"
+  dataset_name: "humanoid_perception_dataset"
+  total_samples: 10000
+  batch_size: 32
+  
+  # Scene randomization parameters
+  scene_randomization:
+    lighting:
+      - intensity_range: [500, 1500]
+      - color_temperature_range: [3000, 8000]
+      - directional_light_angles: [[-45, 45], [-45, 45]]
+    materials:
+      - texture_randomization: true
+      - roughness_range: [0.1, 0.9]
+      - metallic_range: [0.0, 0.3]
+    environment:
+      - object_placement_variance: 0.5
+      - background_objects: ["chair", "table", "plant", "bookshelf"]
+      - random_obstacle_count: [3, 8]
+      
+  # Sensor simulation parameters
+  sensors:
+    camera:
+      resolution: [640, 480]
+      fov_range: [60, 120]
+      noise_model: "gaussian"
+      noise_params:
+        mean: 0.0
+        stddev: 0.01
+    lidar:
+      points: 64
+      range: 25.0
+      noise_params:
+        angular_error: 0.005
+        distance_error: 0.05
+        
+  # Annotation settings
+  annotations:
+    - bounding_boxes_2d
+    - bounding_boxes_3d
+    - segmentation_masks
+    - depth_maps
+    - keypoints (for humanoid joints)
+    
+  # Domain randomization settings
+  domain_randomization:
+    texture_randomization:
+      probability: 0.8
+      texture_library_path: "./texture_library"
+    lighting_randomization:
+      probability: 0.9
+    geometric_randomization:
+      object_scale_range: [0.8, 1.2]
+      position_jitter: 0.1
+    atmospheric_randomization:
+      fog_density_range: [0.0, 0.1]
+      dust_particles: true
+      
+  # Data augmentation settings for training
+  augmentation:
+    rotation_range: [-10, 10]  # degrees
+    scale_range: [0.9, 1.1]
+    brightness_range: [0.8, 1.2]
+    contrast_range: [0.8, 1.2]
+    flip_probability: 0.5
+    
+  # Validation settings
+  validation_split: 0.2
+  test_split: 0.1
+  
+  # Performance settings
+  rendering_devices: ["GPU"]  # Use GPU for accelerated rendering
+  parallel_processing: true
+  max_workers: 8

@@ -1,0 +1,37 @@
+# Humanoid Robot Communication Flow
+
+```
+                   Humanoid Robot Nervous System
+                   =============================
+
+        HEAD (Sensors)                    TORSO (Computing)
+        ==============                    ================
+        [Camera Node]                         |
+            |                                 |
+            v                                 v
+        [IMU Node]                    [ROS 2 Middleware Core]
+            |                                 |
+            +---------------------------------+
+                      |         |
+                      v         v
+        ARM NODES                    LEG NODES
+        =========                    =========
+    [L Arm Ctrl] <-----> [Humanoid Central] <-----> [R Leg Ctrl]
+         |                      |                        |
+         v                      v                        v
+    [L Gripper]           [State Manager]           [R Ankle Ctrl]
+         |                      |                        |
+         +----------------------+------------------------+
+                                |
+                                v
+                        [Coordination Layer]
+                        [Balance & Gait Mgr]
+
+Communication Patterns:
+- Sensor data flows via Topics to perception nodes
+- High-level commands flow via Services/Actions to controllers
+- State information is shared via Topics among all nodes
+- Feedback loops maintain balance and coordination
+```
+
+This diagram shows how information flows through a humanoid robot's ROS 2-based nervous system, from sensors in the head and limbs to the central processing and back to actuators.

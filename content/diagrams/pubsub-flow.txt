@@ -1,0 +1,31 @@
+# Publisher-Subscriber Communication Flow
+
+```
+                    ROS 2 Publisher-Subscriber Pattern
+                    ==================================
+
+    Publisher Node                    ROS 2 Middleware                 Subscriber Node(s)
+    ==============                    ================                 ================
+                                                                    
+   [Sensor Data]                        [Topic:                        [Receive Data]
+        |                              /humanoid_joint_states]              |
+        v                                   |                               v
+   [Create Message] -------------------> [Message Queue] <----------- [Process Message]
+        |                                   |                               |
+        v                                   v                               v
+   [Populate Fields]                    [QoS Management]              [Extract Fields]
+        |                                   |                               |
+        v                                   v                               v
+   [Publish to Topic]                 [Delivery Policy]               [Callback Triggered]
+        |                                   |                               |
+        +-----------------------------------+-------------------------------+
+                    (Data flows one-way from publisher to subscribers)
+
+Communication Characteristics:
+- Asynchronous: Publisher and subscriber don't need to run simultaneously
+- One-to-many: One publisher can have multiple subscribers
+- Unidirectional: Data flows from publisher to subscriber only
+- Topic-based: Communication happens via named topics
+```
+
+This diagram shows how data flows from a publisher to one or more subscribers through the ROS 2 middleware, which manages the delivery based on Quality of Service settings.

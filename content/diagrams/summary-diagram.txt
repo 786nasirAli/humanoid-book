@@ -1,0 +1,45 @@
+# ROS 2 Concepts Summary for Humanoid Robots
+
+## Key Concepts Overview
+
+```
+                    ROS 2 Nervous System for Humanoid Robots
+                    ======================================
+
+┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   Perception    │───▶│   Decision &     │───▶│    Action &      │
+│   (Sensors)     │    │   Planning       │    │    Control       │
+│                 │    │                  │    │                  │
+│ • Joint States  │    │ • State Estim.   │    │ • Joint Control  │
+│ • IMU Data      │    │ • Behavior Trees │    │ • Trajectory Gen │
+│ • Camera Data   │    │ • Path Planning  │    │ • Balance Ctrl   │
+└─────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                        │
+         └───────────────────────┼────────────────────────┘
+                                 │
+                    ┌──────────────────┐
+                    │ ROS 2 Middleware │
+                    │   (The Nervous   │
+                    │    System Core)   │
+                    │ • Topics         │
+                    │ • Services       │
+                    │ • Actions        │
+                    │ • QoS Settings   │
+                    └──────────────────┘
+
+Communication Patterns:
+- Topics: Sensor data flow, control commands (Pub/Sub pattern)
+- Services: Configuration, calibration (Request/Response)
+- Actions: Complex behaviors with feedback (Goal/Result/Feeback)
+
+QoS Settings for Humanoid Robots:
+- Sensor Data: BEST_EFFORT, VOLATILE, KEEP_LAST(depth=10)
+- Control Commands: RELIABLE, VOLATILE, KEEP_LAST(depth=5)
+- Configuration: RELIABLE, TRANSIENT_LOCAL, KEEP_LAST(depth=1)
+- Planning Results: RELIABLE, VOLATILE, KEEP_ALL
+
+URDF Role: Defines robot structure and kinematic properties
+rclpy Role: Provides Python interface to ROS 2 functionality
+```
+
+This summary diagram illustrates how all components of the ROS 2 nervous system work together to enable humanoid robot functionality.

@@ -1,0 +1,95 @@
+# Isaac Sim Navigation Scenario Configuration
+
+# This configuration defines a navigation scenario in Isaac Sim
+# for testing the AI-Robot Brain in a photorealistic environment
+
+{
+    "scenario_name": "bipedal_navigation_test",
+    "description": "Navigation scenario for testing bipedal humanoid in indoor environment",
+    "environment": {
+        "name": "office_complex_01",
+        "lighting_conditions": ["morning", "afternoon", "evening"],
+        "weather_conditions": ["clear", "overcast"],
+        "physics": {
+            "gravity": [0, 0, -9.81],
+            "solver_type": "TGS"
+        }
+    },
+    "robot": {
+        "model": "bipedal_humanoid",
+        "start_position": [0.0, 0.0, 0.0],
+        "start_orientation": [0.0, 0.0, 0.0, 1.0],
+        "sensors": [
+            {
+                "type": "RGB Camera",
+                "position": [0.1, 0.0, 1.2],
+                "orientation": [0.0, 0.0, 0.0, 1.0],
+                "resolution": [640, 480],
+                "fov": 90
+            },
+            {
+                "type": "IMU",
+                "position": [0.0, 0.0, 0.8],
+                "update_rate": 100
+            },
+            {
+                "type": "Lidar",
+                "position": [0.15, 0.0, 1.0],
+                "rotation_rate": 10,
+                "points": 16,
+                "range": 25.0
+            }
+        ]
+    },
+    "navigation_goals": [
+        {
+            "position": [5.0, 3.0, 0.0],
+            "orientation": [0.0, 0.0, 0.0, 1.0],
+            "tolerance": 0.25,
+            "description": "Goal 1: Kitchen area"
+        },
+        {
+            "position": [-2.0, -4.0, 0.0],
+            "orientation": [0.0, 0.0, 0.0, 1.0],
+            "tolerance": 0.25,
+            "description": "Goal 2: Conference room"
+        },
+        {
+            "position": [7.0, -1.5, 0.0],
+            "orientation": [0.0, 0.0, 0.0, 1.0],
+            "tolerance": 0.25,
+            "description": "Goal 3: Entrance"
+        }
+    ],
+    "obstacles": [
+        {
+            "type": "static",
+            "position": [2.0, 1.0, 0.0],
+            "size": [1.0, 1.0, 1.5],
+            "movable": false
+        },
+        {
+            "type": "dynamic",
+            "position": [3.0, -1.0, 0.0],
+            "size": [0.5, 0.5, 1.8],
+            "movable": true,
+            "movement_pattern": "circular",
+            "speed": 0.5
+        }
+    ],
+    "recording_settings": {
+        "enable_video_capture": true,
+        "video_resolution": [1920, 1080],
+        "capture_frequency": 30,
+        "sensor_data_logging": true,
+        "performance_metrics": true
+    },
+    "synthetic_data_generation": {
+        "annotation_types": ["bounding_box_2d", "segmentation", "depth"],
+        "randomization": {
+            "lighting": true,
+            "textures": true,
+            "object_placement": true
+        }
+    }
+}

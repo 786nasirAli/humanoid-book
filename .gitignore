@@ -1,0 +1,145 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+target/
+*.class
+*.jar
+bin/
+obj/
+*.exe
+*.test
+vendor/
+*.log
+.packages
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.suo
+*.user
+*.iml
+.DS_Store
+Thumbs.db
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Environment
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Coverage
+coverage/
+*.coverage
+.happo-*.json
+
+# Docusaurus
+.docusaurus/
+build/
+
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary folders
+temp/
+tmp/
+
+# Node.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+dist/
+build/
+.nyc_output
+coverage/
+.nyc_output/
+coverage/
+.nyc_output/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.ENV
+.venv/
+.ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.db
+*.log
+.hypothesis/
+.pytest_cache/
+
+# ROS/Gazebo specific
+*.dae
+*.stl
+*.obj
+*.urdf
+*.xacro
+*.world
+*.sdf
+build/
+devel/
+install/
+log/
+
+# Unity specific
+Library/
+Temp/
+Obj/
+Logs/
+.vs/
+UserSettings/
+Build/
+*.unityproj
+*.userprefs
+[OutputName].xml
+[OutputName].log
+*.tmp
+*.cache
+*.csproj
+*.unitypackage
+[OutputName].apk
+[OutputName].aab
+[OutputName].app
+[OutputName].exe
+[OutputName].zip
+[OutputName].dmg
+[OutputName].pkg
+[OutputName].msi
+[OutputName].deb
+[OutputName].rpm

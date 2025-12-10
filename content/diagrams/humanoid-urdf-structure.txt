@@ -1,0 +1,65 @@
+# Humanoid Robot URDF Structure
+
+```
+                         Humanoid Robot Structure (URDF)
+                         ===============================
+
+                    HEAD (head)
+                      |
+                NECK (neck) 
+                      |
+                TORSO (torso)
+               /    |    \
+              /     |     \
+             /      |      \
+    ARM (left_upper_arm)  ARM (right_upper_arm)
+    |                      |
+    v                      v
+(shoulder_joint)      (shoulder_joint)
+    |                      |
+    v                      v
+(upper_arm)           (upper_arm)
+    |                      |
+    v                      v
+(elbow_joint)         (elbow_joint)
+    |                      |
+    v                      v
+(lower_arm)           (lower_arm)
+    |                      |
+    v                      v
+(wrist_joint)         (wrist_joint)
+    |                      |
+    v                      v
+(hand)                (hand)
+
+         /                   \
+        /                     \
+       /                       \
+      v                         v
+(hip_joint)               (hip_joint)
+    |                         |
+    v                         v
+(upper_leg)               (upper_leg)
+    |                         |
+    v                         v
+(knee_joint)            (knee_joint)
+    |                         |
+    v                         v
+(lower_leg)             (lower_leg)
+    |                         |
+    v                         v
+(ankle_joint)           (ankle_joint)
+    |                         |
+    v                         v
+(foot)                  (foot)
+
+Key Components:
+- Links: (names in parentheses) represent rigid bodies
+- Joints: Connections allowing relative movement between links
+- Fixed Joints: No movement allowed (e.g., torso to neck)
+- Revolute Joints: Single-axis rotation (e.g., shoulder, elbow, hip, knee)
+- Kinematic Tree: Torso as central body with limbs as branches
+
+This structure allows ROS 2 controllers to understand the robot's 
+physical configuration and coordinate movement across all joints.
+```

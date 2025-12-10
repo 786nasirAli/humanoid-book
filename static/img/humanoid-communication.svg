@@ -1,0 +1,167 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="white" />
+
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">Humanoid Robot Communication Flow</text>
+
+  <!-- Humanoid Robot Outline -->
+  <g transform="translate(400, 200)">
+    <!-- Head -->
+    <circle cx="0" cy="-60" r="30" fill="none" stroke="#333" stroke-width="2" />
+    
+    <!-- Torso -->
+    <rect x="-25" y="-30" width="50" height="80" fill="none" stroke="#333" stroke-width="2" rx="5" ry="5" />
+    
+    <!-- Arms -->
+    <line x1="-25" y1="-10" x2="-70" y2="20" stroke="#333" stroke-width="4" />
+    <line x1="25" y1="-10" x2="70" y2="20" stroke="#333" stroke-width="4" />
+    
+    <!-- Legs -->
+    <line x1="-15" y1="50" x2="-15" y2="120" stroke="#333" stroke-width="4" />
+    <line x1="15" y1="50" x2="15" y2="120" stroke="#333" stroke-width="4" />
+    
+    <!-- Feet -->
+    <rect x="-25" y="120" width="20" height="10" fill="none" stroke="#333" stroke-width="2" />
+    <rect x="5" y="120" width="20" height="10" fill="none" stroke="#333" stroke-width="2" />
+  </g>
+
+  <!-- Sensor Nodes -->
+  <g transform="translate(150, 100)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#FF9800" stroke="#E65100" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Vision Node</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Cameras)</text>
+  </g>
+
+  <g transform="translate(150, 180)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#FF9800" stroke="#E65100" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">IMU Node</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Inertial)</text>
+  </g>
+
+  <g transform="translate(150, 260)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#FF9800" stroke="#E65100" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Force/Torque</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Sensors)</text>
+  </g>
+
+  <!-- Processing Nodes -->
+  <g transform="translate(550, 100)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#2196F3" stroke="#0D47A1" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Perception</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Vision)</text>
+  </g>
+
+  <g transform="translate(550, 180)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#2196F3" stroke="#0D47A1" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">State Estimator</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Kalman)</text>
+  </g>
+
+  <g transform="translate(550, 260)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#2196F3" stroke="#0D47A1" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Motion Plan</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Trajectory)</text>
+  </g>
+
+  <!-- Control Nodes -->
+  <g transform="translate(375, 400)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Controller</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Balance)</text>
+  </g>
+
+  <g transform="translate(500, 480)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Motor Control</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(Joint)</text>
+  </g>
+
+  <g transform="translate(250, 480)">
+    <rect x="0" y="0" width="100" height="50" rx="5" ry="5" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" />
+    <text x="50" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Behavior</text>
+    <text x="50" y="40" text-anchor="middle" font-size="10" fill="white">(FSM)</text>
+  </g>
+
+  <!-- Communication Links (Topics) -->
+  <!-- From Sensors to Processing -->
+  <line x1="250" y1="125" x2="550" y2="125" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="400" y="110" text-anchor="middle" font-size="10" fill="#333">/camera/image_raw</text>
+
+  <line x1="250" y1="205" x2="550" y2="205" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="400" y="190" text-anchor="middle" font-size="10" fill="#333">/imu/data</text>
+
+  <line x1="250" y1="285" x2="550" y2="285" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="400" y="270" text-anchor="middle" font-size="10" fill="#333">/ft_sensor/forces</text>
+
+  <!-- From Processing to Control -->
+  <line x1="600" y1="150" x2="550" y2="425" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="620" y="280" text-anchor="start" font-size="10" fill="#333">/vision/targets</text>
+
+  <line x1="600" y1="230" x2="475" y2="425" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="520" y="320" text-anchor="middle" font-size="10" fill="#333">/robot/pose</text>
+
+  <line x1="600" y1="310" x2="350" y2="425" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="470" y="360" text-anchor="start" font-size="10" fill="#333">/motion/plan</text>
+
+  <!-- Between Control Nodes -->
+  <line x1="475" y1="425" x2="350" y2="505" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="410" y="460" text-anchor="middle" font-size="10" fill="#333">/balance/cmd</text>
+
+  <line x1="350" y1="505" x2="475" y2="425" stroke="#333" stroke-width="2" marker-end="url(#arrowhead2)" />
+  <text x="410" y="480" text-anchor="middle" font-size="10" fill="#333">/feedback</text>
+
+  <!-- From Control to Robot -->
+  <line x1="425" y1="450" x2="400" y2="320" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="430" y="380" text-anchor="start" font-size="10" fill="#333">/joint_commands</text>
+
+  <line x1="300" y1="505" x2="375" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="330" y="480" text-anchor="middle" font-size="10" fill="#333">/behavior/state</text>
+
+  <!-- Arrow marker definitions -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+    <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+      <polygon points="10 0, 0 3.5, 10 7" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <g transform="translate(50, 500)">
+    <rect x="0" y="0" width="250" height="90" fill="none" stroke="#333" stroke-width="1" />
+    
+    <g transform="translate(10, 15)">
+      <rect x="0" y="0" width="20" height="10" fill="#FF9800" stroke="#E65100" />
+      <text x="30" y="10" font-size="12" fill="#333">Sensor Nodes</text>
+    </g>
+    
+    <g transform="translate(10, 35)">
+      <rect x="0" y="0" width="20" height="10" fill="#2196F3" stroke="#0D47A1" />
+      <text x="30" y="10" font-size="12" fill="#333">Processing Nodes</text>
+    </g>
+    
+    <g transform="translate(10, 55)">
+      <rect x="0" y="0" width="20" height="10" fill="#4CAF50" stroke="#2E7D32" />
+      <text x="30" y="10" font-size="12" fill="#333">Control Nodes</text>
+    </g>
+    
+    <g transform="translate(130, 15)">
+      <line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
+      <text x="30" y="10" font-size="12" fill="#333">Data Flow</text>
+    </g>
+    
+    <g transform="translate(130, 35)">
+      <line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrowhead2)" />
+      <text x="30" y="10" font-size="12" fill="#333">Feedback</text>
+    </g>
+  </g>
+
+  <!-- Annotation -->
+  <g transform="translate(500, 550)">
+    <text x="0" y="0" font-size="14" fill="#333" font-weight="bold">Real-time Communication</text>
+    <text x="0" y="15" font-size="12" fill="#333">for Humanoid Locomotion</text>
+    <text x="0" y="30" font-size="10" fill="#666">Sensors → Processing → Control → Actuators</text>
+  </g>
+</svg>

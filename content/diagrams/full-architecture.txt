@@ -1,0 +1,69 @@
+# Complete ROS 2 Nervous System Architecture
+
+```
+                Complete Humanoid Robot ROS 2 Nervous System
+                ==============================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AI Agent Layer                                     │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────┐    ┌─────────────┐ │
+│  │ Perception  │    │ Decision     │    │ Planning    │    │ Learning    │ │
+│  │   Node      │    │   Node       │    │   Node      │    │   Node      │ │
+│  │ (vision,    │    │ (behavior,   │    │ (path,      │    │ (adapt,    │ │
+│  │  touch,     │    │  logic)      │    │  motion)    │    │  improve)  │ │
+│  │  IMU)       │    │              │    │             │    │             │ │
+│  └─────────────┘    └──────────────┘    └─────────────┘    └─────────────┘ │
+└───────────────────────────┬─────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     ROS 2 Middleware Layer                                  │
+│              (DDS/RMW - Data Distribution Service)                          │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  Quality of Service (QoS) Management                                   ││
+│  │  - Reliability: RELIABLE/BEST_EFFORT                                   ││
+│  │  - Durability: VOLATILE/TRANSIENT_LOCAL                                ││
+│  │  - History: KEEP_LAST/KEEP_ALL                                         ││
+│  │  - Depth: Buffer size configuration                                    ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│  Message Routing & Discovery ────────────────────────────────────────────── │
+│      (Topics, Services, Actions)                                          ││
+└───────────────────────────┬─────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      Control Layer                                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────────┐            │
+│  │ High-level      │  │ Mid-level       │  │ Low-level        │            │
+│  │ Controller      │  │ Controller      │  │ (Joint)          │            │
+│  │ (behavior,      │  │ (balance,       │  │ Controller       │            │
+│  │  gait)          │  │  trajectory)    │  │ (motor control)  │            │
+│  └─────────────────┘  └─────────────────┘  └──────────────────┘            │
+└───────────────────────────┬─────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       Hardware Layer                                        │
+│  ┌──────────────┐    ┌─────────────────┐    ┌──────────────────┐           │
+│  │   Sensors    │    │   Actuators     │    │ Communication    │           │
+│  │  (Cameras,   │    │   (Motors,      │    │   (WiFi,         │           │
+│  │   IMU,       │    │    Grippers)    │    │    Ethernet)     │           │
+│  │   Encoders)  │    │                 │    │                  │           │
+│  └──────────────┘    └─────────────────┘    └──────────────────┘           │
+│        │                      │                        │                   │
+│        ▼                      ▼                        ▼                   │
+│   Sensor Data          Command Output           Network I/O               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Simplified Topic Flow:
+Sensors → Perception → Decision → Planning → Control → Actuators
+   │                      │                      │
+   └──────────────────────┼──────────────────────┘
+                          │
+                 Feedback Loop (State Estimation)
+
+This architecture demonstrates how ROS 2 serves as the "nervous system" of a humanoid robot,
+connecting all layers from high-level AI to low-level hardware control through a robust
+middleware that manages communication, timing, and reliability.
+```

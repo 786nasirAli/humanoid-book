@@ -1,0 +1,32 @@
+# ROS 2 Architecture
+
+```
+                  ROS 2 Nervous System Architecture
+                  =================================
+
+    Perception Layer        Decision Layer          Action Layer
+    ================        ==============          ============
+
+   [Camera Node]              [AI Agent]           [Motor Ctrl 1]
+         |                         |                     |
+         v                         v                     v
+    [Sensor Proc]           [Behavior Mgr]         [Motor Ctrl 2]
+         |                         |                     |
+         v                         v                     v
+    [State Estim]           [Path Planner]         [Motor Ctrl 3]
+         |                         |                     |
+         +-------------------------+---------------------+
+                              |
+                              v
+                        [ROS 2 Middleware]
+                        (Communication Backbone)
+                        ======================
+                        
+    Nodes communicate via:
+    - Topics (pub/sub)     Services (req/resp)     Actions (with feedback)
+    [Sensor Data]         [Configuration]           [Long Tasks]
+    [State Updates]       [Calibration]             [Navigation]
+    [Vision Data]         [Mode Changes]            [Manipulation]
+```
+
+This represents how ROS 2 functions as the nervous system of a robot, with the middleware acting as the communication backbone connecting perception, decision-making, and action layers.

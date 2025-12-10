@@ -1,0 +1,29 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#446CB3" />
+  
+  <!-- Gazebo-style Physics Elements -->
+  <rect x="40" y="40" width="120" height="120" fill="none" stroke="#FFFFFF" stroke-width="4" rx="8" />
+  <circle cx="100" cy="100" r="30" fill="none" stroke="#FFFFFF" stroke-width="3" />
+  <path d="M70 70 L130 130 M130 70 L70 130" stroke="#FFFFFF" stroke-width="3" />
+
+  <!-- Unity-style 3D Visualization -->
+  <polygon points="100,40 140,80 140,140 60,140 60,80" fill="none" stroke="#F4D03F" stroke-width="4" />
+  <line x1="60" y1="80" x2="100" y2="40" stroke="#F4D03F" stroke-width="4" />
+  <line x1="140" y1="80" x2="100" y2="40" stroke="#F4D03F" stroke-width="4" />
+  <line x1="100" y1="100" x2="140" y2="140" stroke="#F4D03F" stroke-width="2" />
+
+  <!-- Digital Twin Link -->
+  <path d="M50 160 Q100 180 150 160" stroke="#EC7063" stroke-width="3" fill="none" stroke-dasharray="5,5" />
+  
+  <!-- Robot Icon -->
+  <circle cx="100" cy="60" r="12" fill="#85C1E9" />
+  <rect x="85" y="72" width="30" height="35" rx="5" fill="#85C1E9" />
+  <rect x="75" y="90" width="12" height="15" rx="3" fill="#F4D03F" />
+  <rect x="113" y="90" width="12" height="15" rx="3" fill="#F4D03F" />
+  <circle cx="90" cy="120" r="6" fill="#EC7063" />
+  <circle cx="110" cy="120" r="6" fill="#EC7063" />
+
+  <!-- Text abbreviation -->
+  <text x="100" y="190" font-family="Arial" font-size="20" fill="white" text-anchor="middle">DT</text>
+</svg>

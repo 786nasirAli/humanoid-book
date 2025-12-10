@@ -1,0 +1,22 @@
+# Physics Parameters for Gazebo Simulation
+# This file documents the physics parameters used in the simulation
+# Actual physics configuration is in the SDF world files
+
+gravity:
+  x: 0.0
+  y: 0.0
+  z: -9.81  # Standard Earth gravity in m/s^2
+
+physics_engine:
+  type: ode  # Open Dynamics Engine
+  real_time_update_rate: 1000  # Hz
+  max_step_size: 0.001  # seconds
+
+ode_parameters:
+  solver_type: quick
+  iters: 10
+  sor: 1.3
+
+collision_parameters:
+  min_depth: 0.001  # meters
+  max_vel: 100.0    # m/s

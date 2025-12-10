@@ -1,0 +1,22 @@
+# Isaac ROS VSLAM Configuration
+
+# This is a sample configuration for hardware-accelerated Visual SLAM using Isaac ROS
+# Actual implementation would require Isaac ROS GEMs and NVIDIA GPU
+
+vslam_node:
+  ros__parameters:
+    # Camera parameters
+    camera_info_url: "package://robot_description/config/camera_info.yaml"
+    
+    # Processing parameters
+    enable_rectification: true
+    enable_feature_tracking: true
+    enable_mapping: true
+    
+    # Performance parameters for real-time processing
+    max_features: 2000
+    processing_rate: 30.0  # FPS target
+    
+    # Hardware acceleration settings
+    use_gpu: true
+    gpu_device_id: 0

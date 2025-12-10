@@ -1,0 +1,55 @@
+<!-- 
+Launch file for the complete AI-Robot Brain system
+This would launch Isaac ROS perception, Nav2 navigation, and coordinate with Isaac Sim
+Actual implementation would require a ROS2 environment with Isaac packages
+-->
+<launch>
+  <!-- Arguments -->
+  <arg name="use_sim_time" default="True"/>
+  <arg name="params_file" default="$(find-pkg-share nav2_bipedal_configs)/bipedal_nav2_params.yaml"/>
+  <arg name="namespace" default=""/>
+
+  <!-- Include Isaac ROS VSLAM components -->
+  <group>
+    <push-ros-namespace namespace="isaac_ros"/>
+    
+    <!-- Launch stereo camera processing nodes -->
+    <node pkg="isaac_ros_stereo_image_proc" exec="stereo_image_proc" name="stereo_image_proc" output="screen">
+      <param name="use_sim_time" value="$(var use_sim_time)"/>
+    </node>
+    
+    <!-- Launch Isaac ROS VSLAM node -->
+    <node pkg="isaac_ros_visual_slam" exec="visual_slam_node" name="visual_slam_node" output="screen" args="--ros-args --log-level WARN">
+      <param name="use_sim_time" value="$(var use_sim_time)"/>
+      <param name="enable_rectification" value="True"/>
+      <param name="enable_visualization" value="True"/>
+      <param name="enable_occupancy_map_visualization" value="True"/>
+      <param name="enable_freespace_pointcloud" value="True"/>
+      <param name="map_frame" value="map"/>
+      <param name="odom_frame" value="odom"/>
+      <param name="base_frame" value="base_link"/>
+    </node>
+  </group>
+
+  <!-- Include Nav2 for bipedal navigation -->
+  <include file="$(find-pkg-share nav2_bipedal_configs)/launch/navigation_launch.py">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="params_file" value="$(var params_file)"/>
+  </include>
+
+  <!-- Include Isaac Sim interface if running simulation -->
+  <group if="$(var use_sim_time)">
+    <node pkg="isaac_ros_bipedal_integration" exec="sim_bridge_node" name="sim_bridge" output="screen">
+      <param name="use_sim_time" value="$(var use_sim_time)"/>
+      <param name="sim_server_address" value="localhost"/>
+      <param name="sim_server_port" value="50051"/>
+    </node>
+  </group>
+
+  <!-- Launch robot state publisher -->
+  <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="robot_description" value="$(command 'xacro $(find-pkg-share robot_description)/urdf/bipedal_humanoid.urdf.xacro')"/>
+  </node>
+
+</launch>

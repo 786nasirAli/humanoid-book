@@ -1,0 +1,49 @@
+# Agent-Controller Communication Flow
+
+```
+                     Humanoid Robot Agent-Controller Communication
+                     ===========================================
+
+   +------------------+                    ROS 2                    +------------------+
+   |                  |                                              |                  |
+   |  Python Agent    |                                              |   Robot          |
+   |  (High-level     |                                              |   Controllers    |
+   |  Decision Making)|                                              |   (Hardware      |
+   |                  |                                              |   Interface)     |
+   +--------+---------+                                              +---------+--------+
+            |                                                                  |
+            |                                                                  |
+            |    1. Command Requests (Float64MultiArray)                       |
+            |    --------------------------->                                 |
+            |                                                                  |
+            |    2. Status Feedback (JointState, etc.)                        |
+            |    <---------------------------                                 |
+            |                                                                  |
+            |                                                                  |
+            |                                                                  |
+   +--------v---------+   +---------------------+   +------------------+   +--v----------+
+   | Perception       |   | ROS 2 Middleware    |   | Control &        |   | Hardware    |
+   | Processing       |   | (DDS/RMW Layer)     |   | Actuation        |   | Interface   |
+   | - Vision         |   | - Message Routing   |   | - Joint Control  |   | - Motors    |
+   | - Sensor Fusion  |   | - QoS Management    |   | - Safety Logic   |   | - Sensors   |
+   | - State Estim.   |   | - Delivery Policy   |   | - Coordination   |   | - E-Stops   |
+   +------------------+   +---------------------+   +------------------+   +-------------+
+            |                          |                       |                    |
+            +--------------------------+-----------------------+--------------------+
+                                       |
+                               Robot Nervous System
+
+Communication Flow:
+1. Python Agent analyzes sensor data and generates control commands
+2. Commands are published to appropriate topics (e.g., joint_commands)
+3. Controller nodes subscribe to command topics and execute on hardware
+4. Sensor data is published back to the agent for next iteration
+
+QoS Settings by Data Type:
+- Command topics: RELIABLE, VOLATILE, KEEP_LAST(depth=5)
+- Sensor feedback: BEST_EFFORT, VOLATILE, KEEP_LAST(depth=10)
+- Configuration: RELIABLE, TRANSIENT_LOCAL, KEEP_LAST(depth=1)
+```
+
+This diagram shows how the Python agent (for high-level decision making) communicates with controllers 
+that interface directly with the robot's hardware through the ROS 2 middleware.

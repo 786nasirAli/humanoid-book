@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env*
+
+# Logs
+*.log
+
+# Temporary folders
+temp/
+tmp/
+
+# Build outputs
+dist/
+build/
+.nyc_output
+coverage/
+
+# Docusaurus temp files
+.docusaurus/
+
+# ROS/Gazebo specific
+build/
+devel/
+install/
+log/
+
+# Development files that aren't needed for the published package
+spec/
+specs/
+.history/
+.specify/
+.qwen/

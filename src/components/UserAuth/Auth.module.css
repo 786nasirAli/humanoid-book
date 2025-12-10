@@ -1,0 +1,150 @@
+/* src/components/UserAuth/Auth.module.css */
+.authContainer {
+  max-width: 450px;
+  width: 100%;
+  padding: 30px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+.authContainer h2 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inputGroup label {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.inputGroup input,
+.inputGroup select,
+.inputGroup textarea {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus,
+.inputGroup textarea:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.inputGroup textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submitButton {
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.submitButton:disabled {
+  background: #bbdefb;
+  cursor: not-allowed;
+}
+
+.switchForm {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.switchButton {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: 5px;
+}
+
+.switchButton:hover {
+  color: #0d47a1;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.userInfo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userInfo div {
+  flex: 1;
+}
+
+.userInfo h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.userInfo p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
