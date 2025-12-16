@@ -69,7 +69,7 @@ As a student, I want to implement and test practical examples for each module so
 ### Functional Requirements
 
 - **FR-001**: System MUST cover all 4 course modules: The Robotic Nervous System (ROS 2), The Digital Twin (Gazebo & Unity), The AI-Robot Brain (NVIDIA Isaac™), and Vision-Language-Action (VLA)
-- **FR-002**: System MUST include integrated RAG chatbot with OpenAI Agents/ChatKit SDKs, Neon Serverless Postgres, and Qdrant Cloud
+- **FR-002**: System MUST include integrated RAG chatbot with Google Gemini API, Neon Serverless Postgres, and Qdrant Cloud
 - **FR-003**: System MUST implement user authentication and personalization via better-auth.com
 - **FR-004**: System MUST support Urdu translation of course content
 - **FR-005**: System MUST deploy to GitHub Pages for accessibility

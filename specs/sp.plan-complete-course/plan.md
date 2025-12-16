@@ -12,10 +12,10 @@ This feature implements the complete Physical AI & Humanoid Robotics course text
 ## Technical Context
 
 **Language/Version**: Python 3.8+ (ROS 2 Humble Hawksbill requirements), Node.js 18+ (for Docusaurus), JavaScript/TypeScript (for RAG integration)
-**Primary Dependencies**: 
+**Primary Dependencies**:
 - ROS 2 Humble Hawksbill, rclpy, rcl_interfaces, std_msgs, geometry_msgs
 - Docusaurus 3.1+, Node.js 18+
-- OpenAI API, Anthropic API for RAG functionality
+- Google Gemini API for RAG functionality
 - Qdrant Cloud for vector storage
 - Neon Serverless Postgres for user data
 - Better-Auth for authentication

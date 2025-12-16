@@ -10,8 +10,9 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.11.0",
-    "@qdrant/js-client-rest": "^1.2.0",
+    "@pinecone-database/pinecone": "^3.0.3",
     "axios": "^1.6.0",
+    "cohere-ai": "^7.20.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",

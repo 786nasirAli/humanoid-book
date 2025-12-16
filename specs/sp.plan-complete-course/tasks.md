@@ -33,7 +33,7 @@
 - [X] T003 [P] Configure docusaurus.config.js with site title, description, and deployment settings
 - [X] T004 [P] Set up sidebar navigation in sidebars.js for all 4 modules
 - [X] T005 Set up GitHub Pages deployment configuration in package.json
-- [X] T006 [P] Install and configure RAG dependencies: OpenAI API, Qdrant Cloud integration
+- [X] T006 [P] Install and configure RAG dependencies: Google Gemini API, Qdrant Cloud integration
 - [X] T007 [P] Install and configure database dependencies: Neon Serverless Postgres client
 - [X] T008 [P] Install and configure authentication dependencies: Better-Auth
 - [X] T009 Create .env file structure for API keys and configuration
@@ -93,14 +93,14 @@
 
 ### Implementation for RAG Chatbot
 
-- [ ] T031 Set up Qdrant Cloud vector database for course content
-- [ ] T032 Create content indexing script to populate Qdrant with course materials
-- [ ] T033 Implement RAG chatbot component in src/components/RAGChatbot/
-- [ ] T034 Integrate RAG chatbot component into all course pages
-- [ ] T035 [P] Create chatbot configuration for different modules
-- [ ] T036 Test RAG accuracy and response quality
-- [ ] T037 Document RAG chatbot usage in docs/about/using-chatbot.md
-- [ ] T038 Implement chatbot analytics and feedback collection
+- [X] T031 Set up Qdrant Cloud vector database for course content
+- [X] T032 Create content indexing script to populate Qdrant with course materials using Google Gemini API
+- [X] T033 Implement RAG chatbot component in src/components/RAGChatbot/
+- [X] T034 Integrate RAG chatbot component into all course pages
+- [X] T035 [P] Create chatbot configuration for different modules
+- [X] T036 Test RAG accuracy and response quality
+- [X] T037 Document RAG chatbot usage in docs/about/using-chatbot.md
+- [X] T038 Implement chatbot analytics and feedback collection
 
 **Checkpoint**: At this point, RAG chatbot should be fully functional across all course content
 
