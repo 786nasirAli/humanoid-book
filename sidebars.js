@@ -53,6 +53,14 @@ const sidebars = {
         'module-4/troubleshooting',
       ],
     },
+    {
+      type: 'category',
+      label: 'Course Support',
+      items: [
+        'about/using-chatbot',
+        'about/chatbot-configuration',
+      ],
+    },
   ],
 };
 
