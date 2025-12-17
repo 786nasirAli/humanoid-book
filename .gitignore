@@ -142,4 +142,4 @@ Build/
 [OutputName].pkg
 [OutputName].msi
 [OutputName].deb
-[OutputName].rpm
+[OutputName].rpm".env*"  
