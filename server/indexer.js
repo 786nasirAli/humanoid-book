@@ -1,11 +1,13 @@
 const { Pinecone } = require('@pinecone-database/pinecone');
-const cohere = require('cohere-ai');
+const { CohereClient } = require('cohere-ai');
 const fs = require('fs').promises;
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: './.env' });
 
 // Initialize clients
-cohere.init(process.env.COHERE_API_KEY);
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY,
+});
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY,
@@ -107,7 +109,7 @@ async function generateEmbeddings(texts) {
       inputType: 'search_document',
     });
 
-    return response.body.embeddings;
+    return response.embeddings;
   } catch (error) {
     console.error('Error generating embeddings with Cohere:', error);
     throw error;

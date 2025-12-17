@@ -7,6 +7,7 @@ const RAGChatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false); // Chatbot panel visibility
   const [feedbackVisible, setFeedbackVisible] = useState(null); // Track which message feedback is visible
+  const [retrievedDocuments, setRetrievedDocuments] = useState([]); // Track retrieved documents
   const messagesEndRef = useRef(null);
 
   // Function to scroll to bottom of messages
@@ -23,8 +24,9 @@ const RAGChatbot = () => {
     console.log('Analytics event:', event, data);
 
     try {
-      // API call to track analytics - using absolute URL to backend server
-      await fetch('http://localhost:3001/api/analytics', {
+      // API call to track analytics - using configurable backend URL
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      await fetch(`${BACKEND_URL}/api/analytics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event, data, timestamp: new Date() })
@@ -34,13 +36,110 @@ const RAGChatbot = () => {
     }
   };
 
+  // Function to retrieve documents from Pinecone
+  const retrieveDocuments = async (query) => {
+    try {
+      // Show retrieving status to user
+      const retrievingMessage = {
+        id: Date.now(),
+        sender: 'system',
+        text: 'Retrieving relevant documents...',
+        timestamp: new Date(),
+        status: 'retrieving'
+      };
+
+      setMessages(prev => [...prev, retrievingMessage]);
+
+      // Call the retrieval API
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const response = await fetch(`${BACKEND_URL}/api/retrieve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Retrieve API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Update the retrieving message to show retrieved documents
+      setMessages(prev => prev.map(msg =>
+        msg.id === retrievingMessage.id
+          ? {
+              ...msg,
+              text: `Retrieved ${data.retrievedCount} relevant documents. Generating response...`,
+              status: 'retrieved',
+              retrievedDocs: data.results
+            }
+          : msg
+      ));
+
+      // Store the retrieved documents for display
+      setRetrievedDocuments(data.results);
+
+      return data;
+    } catch (error) {
+      console.error('Error calling retrieval API:', error);
+
+      // Update the retrieving message to show error
+      setMessages(prev => prev.map(msg =>
+        msg.id === Date.now()
+          ? {
+              ...msg,
+              text: 'Error retrieving documents. Using general knowledge to answer.',
+              status: 'error'
+            }
+          : msg
+      ));
+
+      return {
+        results: [],
+        retrievedCount: 0
+      };
+    }
+  };
+
+  // Function to generate response using Gemini with retrieved context
+  const generateResponse = async (query, context = null) => {
+    try {
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const response = await fetch(`${BACKEND_URL}/api/rag`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`RAG API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      return {
+        response: data.response,
+        sources: data.sources || []
+      };
+    } catch (error) {
+      console.error('Error calling RAG API:', error);
+      return {
+        response: `Sorry, I encountered an error generating a response: ${error.message}.`,
+        sources: []
+      };
+    }
+  };
+
   // Function to handle sending messages to the RAG system
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
 
     // Track the user query
-    trackAnalytics('user_query', { query: inputValue, timestamp: new Date() });
+    await trackAnalytics('user_query', { query: inputValue, timestamp: new Date() });
 
     // Add user message to chat
     const userMessage = {
@@ -54,32 +153,45 @@ const RAGChatbot = () => {
     setIsLoading(true);
 
     try {
-      // Call the actual RAG backend API
-      const startTime = Date.now();
-      const ragResult = await getRAGResponse(inputValue);
-      const responseTime = Date.now() - startTime;
+      // Step 1: Retrieve relevant documents using the retrieval tool
+      const retrievalStartTime = Date.now();
+      const retrievalResult = await retrieveDocuments(inputValue);
+      const retrievalTime = Date.now() - retrievalStartTime;
 
-      // Track the response metrics
-      trackAnalytics('response_received', {
+      // Track the document retrieval
+      await trackAnalytics('document_retrieval', {
+        query: inputValue,
+        retrievedCount: retrievalResult.retrievedCount || retrievalResult.results?.length || 0,
+        retrievalTime: retrievalTime
+      });
+
+      // Step 2: Generate response using RAG with retrieved context
+      const responseStartTime = Date.now();
+      const responseResult = await generateResponse(inputValue);
+      const responseTime = Date.now() - responseStartTime;
+
+      // Track the response generation
+      await trackAnalytics('response_generated', {
         responseTime,
         query: inputValue,
-        responseLength: ragResult.response.length,
-        sourcesCount: ragResult.sources.length
+        responseLength: responseResult.response.length,
+        sourcesCount: responseResult.sources.length
       });
 
       // Add bot response to chat
       const botMessage = {
         id: Date.now() + 1, // Add unique ID for feedback tracking
         sender: 'bot',
-        text: ragResult.response,
+        text: responseResult.response,
         timestamp: new Date(),
-        sources: ragResult.sources,
-        responseTime // Include response time for potential feedback
+        sources: responseResult.sources,
+        responseTime, // Include response time for potential feedback
+        retrievedDocs: retrievalResult.results // Attach retrieved documents to the response
       };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       // Track error
-      trackAnalytics('error', { query: inputValue, error: error.message });
+      await trackAnalytics('error', { query: inputValue, error: error.message });
 
       const errorMessage = {
         id: Date.now() + 1, // Add unique ID for feedback tracking
@@ -90,6 +202,7 @@ const RAGChatbot = () => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setRetrievedDocuments([]); // Reset retrieved documents after response
     }
   };
 
@@ -107,8 +220,9 @@ const RAGChatbot = () => {
     });
 
     try {
-      // Send feedback to backend API - using absolute URL to backend server
-      await fetch('http://localhost:3001/api/feedback', {
+      // Send feedback to backend API - using configurable backend URL
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      await fetch(`${BACKEND_URL}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, feedback, messageText: message.text })
@@ -133,38 +247,6 @@ const RAGChatbot = () => {
     setFeedbackVisible(feedbackVisible === messageId ? null : messageId);
   };
 
-  // Function to call the actual RAG backend API
-  const getRAGResponse = async (query) => {
-    try {
-      // Using absolute URL to backend server to avoid CORS issues
-      const response = await fetch('http://localhost:3001/api/rag', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      return {
-        response: data.response,
-        sources: data.sources || []
-      };
-    } catch (error) {
-      console.error('Error calling RAG API:', error);
-      return {
-        response: `Sorry, I encountered an error processing your request: ${error.message}.
-        Please make sure the backend server is running and properly configured.`,
-        sources: []
-      };
-    }
-  };
-
-
   // Toggle chatbot panel visibility
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
@@ -177,15 +259,15 @@ const RAGChatbot = () => {
         <div className={styles.chatPanel}>
           <div className={styles.chatHeader}>
             <h3>Course Assistant</h3>
-            <button 
-              className={styles.closeButton} 
+            <button
+              className={styles.closeButton}
               onClick={toggleChatbot}
               aria-label="Close chatbot"
             >
               ×
             </button>
           </div>
-          
+
           <div className={styles.chatMessages}>
             {messages.length === 0 ? (
               <div className={styles.welcomeMessage}>
@@ -199,20 +281,42 @@ const RAGChatbot = () => {
                   className={`${styles.message} ${styles[message.sender]}`}
                 >
                   <div className={styles.messageText}>{message.text}</div>
-                  {message.sources && message.sources.length > 0 && (
+
+                  {/* Show retrieved documents if this is a retrieval update */}
+                  {message.retrievedDocs && message.retrievedDocs.length > 0 && (
+                    <div className={styles.retrievedDocs}>
+                      <details>
+                        <summary>Retrieved {message.retrievedDocs.length} documents</summary>
+                        <ul>
+                          {message.retrievedDocs.map((doc, idx) => (
+                            <li key={idx} className={styles.docItem}>
+                              <a href={doc.source} target="_blank" rel="noopener noreferrer">
+                                {doc.source.split('/').pop() || 'Document'}
+                              </a>
+                              <p className={styles.docPreview}>{doc.content.substring(0, 150)}...</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </div>
+                  )}
+
+                  {/* Show sources for bot responses */}
+                  {message.sender === 'bot' && message.sources && message.sources.length > 0 && (
                     <div className={styles.sources}>
                       <p>Sources:</p>
                       <ul>
                         {message.sources.map((source, idx) => (
                           <li key={idx}>
-                            <a href={source.url} target="_blank" rel="noopener noreferrer">
-                              {source.title}
+                            <a href={source} target="_blank" rel="noopener noreferrer">
+                              {source.split('/').pop() || source}
                             </a>
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
+
                   {/* Feedback options for bot messages */}
                   {message.sender === 'bot' && (
                     <div className={styles.feedbackContainer}>
@@ -261,7 +365,7 @@ const RAGChatbot = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
-          
+
           <form className={styles.chatInputForm} onSubmit={handleSendMessage}>
             <input
               type="text"
@@ -271,8 +375,8 @@ const RAGChatbot = () => {
               disabled={isLoading}
               className={styles.chatInput}
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading || !inputValue.trim()}
               className={styles.sendButton}
             >
@@ -281,7 +385,7 @@ const RAGChatbot = () => {
           </form>
         </div>
       )}
-      
+
       {/* Chatbot toggle button */}
       <button
         className={`${styles.chatToggleButton} ${isOpen ? styles.open : ''}`}

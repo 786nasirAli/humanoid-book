@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 const { Pinecone } = require('@pinecone-database/pinecone');
-const cohere = require('cohere-ai');
+const { CohereClient } = require('cohere-ai');
+const { retrieveFromPinecone } = require('./pinecone-retriever');
 const userRoutes = require('./routes/userRoutes');
 require('dotenv').config();
 
@@ -19,16 +20,11 @@ app.use(express.json());
 // Routes
 app.use('/api', userRoutes);
 
-// Initialize clients
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: 'models/gemini-2.0-flash',
-  generationConfig: {
-    temperature: 0.3,
-    maxOutputTokens: 800,
-    topP: 0.95,
-  }
-}); // models/ prefix is required for Google's API format
+// Initialize OpenRouter client
+const openai = new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+});
 
 // Initialize Pinecone client
 const pinecone = new Pinecone({
@@ -38,7 +34,9 @@ const pinecone = new Pinecone({
 const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
 
 // Initialize Cohere client
-cohere.init(process.env.COHERE_API_KEY);
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY,
+});
 
 // Function to generate embedding using Cohere
 async function generateEmbedding(text) {
@@ -49,7 +47,7 @@ async function generateEmbedding(text) {
       inputType: 'search_query',
     });
 
-    return response.body.embeddings[0]; // Return the embedding vector
+    return response.embeddings[0]; // Return the embedding vector
   } catch (error) {
     console.error('Error generating embedding with Cohere:', error);
     // Fallback to random embedding if Cohere fails
@@ -57,85 +55,134 @@ async function generateEmbedding(text) {
   }
 }
 
-// RAG endpoint
+// Import the retrieval function
+const { performRAGRetrieval } = require('./retriever');
+
+// Retrieval endpoint - acts as a tool for the chatbot
+app.post('/api/retrieve', async (req, res) => {
+  const { query } = req.body;
+
+  if (!query) {
+    console.log('Query is missing for retrieval');
+    return res.status(400).json({ error: 'Query is required' });
+  }
+
+  try {
+    console.log(`Retrieving documents for query: ${query}`);
+
+    // Use the Pinecone retriever tool to get relevant documents
+    console.log('Calling Pinecone retrieval tool...');
+    const retrievalResult = await retrieveFromPinecone(query);
+    console.log('Pinecone retrieval completed.');
+
+    // Format the results
+    const formattedResults = retrievalResult.results.map(result => ({
+      id: result.id,
+      content: result.content,
+      source: result.source,
+      score: result.score,
+      rank: result.rank
+    }));
+
+    console.log(`Retrieved ${retrievalResult.retrievedCount} documents`);
+
+    // Return the retrieved documents
+    res.status(200).json({
+      results: formattedResults,
+      query: query,
+      retrievedCount: retrievalResult.retrievedCount
+    });
+    console.log('Retrieval results sent to client');
+
+  } catch (error) {
+    console.error('Retrieval API Error:', error.message);
+    console.error('Retrieval API Error Stack:', error.stack);
+
+    res.status(500).json({
+      error: 'Internal server error during document retrieval',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// RAG endpoint - uses the retrieval tool and then generates response
 app.post('/api/rag', async (req, res) => {
   const { query } = req.body;
 
   if (!query) {
+    console.log('Query is missing');
     return res.status(400).json({ error: 'Query is required' });
   }
 
   try {
     console.log(`Received query: ${query}`);
 
-    // Attempt to search in Pinecone vector database
-    let retrievedDocs = [];
-    let sources = [];
+    // Call the retrieval tool to get relevant documents
+    console.log('Calling retrieval tool...');
+    const retrievalResult = await retrieveFromPinecone(query);
+    console.log('Retrieval tool completed.');
+
+    // Format the context from retrieved documents
+    const contextText = retrievalResult.results.map(result =>
+      `Source: ${result.source}\nContent: ${result.content}`
+    ).join('\n\n---\n\n');
+
+    console.log(`Context text length: ${contextText.length}`);
+    console.log(`Retrieved ${retrievalResult.retrievedCount} documents`);
+
+    // Create prompt using retrieved context
+    const prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
 
     try {
-      // Generate embedding for the query using a compatible method
-      const queryEmbedding = await generateEmbedding(query);
-
-      const queryResponse = await index.query({
-        vector: queryEmbedding,
-        topK: 5,
-        includeMetadata: true,
+      console.log('Sending prompt to OpenAI...');
+      // Use OpenRouter to generate a response based on retrieved context
+      const response = await openai.chat.completions.create({
+        model: 'meta-llama/llama-3.2-3b-instruct',  // Using Llama 3.2 3B Instruct model from OpenRouter
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant for the Physical AI & Humanoid Robotics course. Use the provided context to answer questions accurately and reference the relevant modules when possible. Be concise but comprehensive.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.3,
+        top_p: 0.95,
       });
 
-      // Check if matches exist and format retrieved documents for context
-      if (queryResponse && queryResponse.matches && queryResponse.matches.length > 0) {
-        retrievedDocs = queryResponse.matches.map((match) => ({
-          content: match.metadata?.content || '',
-          source: match.metadata?.source || '',
-          module: match.metadata?.module || ''
-        }));
+      const text = response.choices[0].message.content;
+      console.log('Response generated from OpenAI:', text.substring(0, 100) + '...');
 
-        sources = retrievedDocs.map(doc => doc.source);
-      } else {
-        // If no matches found, use fallback
-        retrievedDocs = [{
-          content: "No relevant content found in the knowledge base.",
-          source: "none",
-          module: "fallback"
-        }];
-        sources = ["none"];
-      }
-    } catch (pineconeError) {
-      console.warn('Pinecone connection failed, using fallback response:', pineconeError.message);
-      // Use fallback response when Pinecone is not available
-      retrievedDocs = [{
-        content: "This is a simulated response as the Pinecone vector database is not accessible. In a working implementation, this would contain relevant course content retrieved from the knowledge base.",
-        source: "simulation",
-        module: "fallback"
-      }];
-      sources = ["simulation"];
+      // Extract sources from results
+      const sources = retrievalResult.results.map(r => r.source);
+
+      // Return the response along with source information
+      res.status(200).json({
+        response: text,
+        sources: sources,
+        retrieved_docs_count: retrievalResult.retrievedCount
+      });
+      console.log('Response sent to client');
+    } catch (openaiError) {
+      console.error('OpenAI API Error:', openaiError.message);
+
+      // In case of OpenAI error, return the retrieved documents only
+      res.status(200).json({
+        response: "Could not generate a response due to an API error, but here are some relevant documents:",
+        sources: retrievalResult.results.map(r => r.source),
+        retrieved_docs_count: retrievalResult.retrievedCount,
+        fallback_context: retrievalResult.results.map(r => r.content).join('\n\n')
+      });
     }
-
-    // Step 3: Create a context for the LLM with retrieved documents
-    const contextText = retrievedDocs.map(doc => doc.content).join('\n\n');
-
-    // Step 4: Use Gemini to generate a response based on retrieved context
-    // If using fallback, inform the model
-    let prompt;
-    if (retrievedDocs[0].source === "simulation") {
-      prompt = `Question: ${query}\n\nThe knowledge base is currently unavailable. Please provide a general response about robotics and AI concepts based on your training. If the question is about ROS 2, Gazebo, Unity, NVIDIA Isaac, or Vision-Language-Action systems, acknowledge that these are topics covered in the course but that you cannot access the specific course materials right now.`;
-    } else {
-      prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
-    }
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Step 5: Return the response along with source information
-    res.status(200).json({
-      response: text,
-      sources: sources,
-      retrieved_docs_count: retrievedDocs.length
-    });
 
   } catch (error) {
-    console.error('RAG API Error:', error);
+    console.error('RAG API Error:', error.message);
+    console.error('RAG API Error Stack:', error.stack);
+
+    // Send detailed error info for debugging
     res.status(500).json({
       error: 'Internal server error during RAG processing',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
