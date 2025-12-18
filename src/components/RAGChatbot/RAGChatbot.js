@@ -25,7 +25,7 @@ const RAGChatbot = () => {
 
     try {
       // API call to track analytics - using configurable backend URL
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend-il4q.vercel.app';
       await fetch(`${BACKEND_URL}/api/analytics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,7 +51,7 @@ const RAGChatbot = () => {
       setMessages(prev => [...prev, retrievingMessage]);
 
       // Call the retrieval API
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend-il4q.vercel.app';
       const response = await fetch(`${BACKEND_URL}/api/retrieve`, {
         method: 'POST',
         headers: {
@@ -106,7 +106,7 @@ const RAGChatbot = () => {
   // Function to generate response using Gemini with retrieved context
   const generateResponse = async (query, context = null) => {
     try {
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend-il4q.vercel.app';
       const response = await fetch(`${BACKEND_URL}/api/rag`, {
         method: 'POST',
         headers: {
@@ -221,7 +221,7 @@ const RAGChatbot = () => {
 
     try {
       // Send feedback to backend API - using configurable backend URL
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend-il4q.vercel.app';
       await fetch(`${BACKEND_URL}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
