@@ -63,17 +63,26 @@ app.post('/api/retrieve', async (req, res) => {
   const { query } = req.body;
 
   if (!query) {
-    console.log('Query is missing for retrieval');
+    console.log('[API-DEBUG] Query is missing for retrieval');
     return res.status(400).json({ error: 'Query is required' });
   }
 
   try {
-    console.log(`Retrieving documents for query: ${query}`);
+    console.log(`[API-DEBUG] Retrieving documents for query: ${query}`);
 
     // Use the Pinecone retriever tool to get relevant documents
-    console.log('Calling Pinecone retrieval tool...');
+    console.log('[API-DEBUG] Calling Pinecone retrieval tool...');
     const retrievalResult = await retrieveFromPinecone(query);
-    console.log('Pinecone retrieval completed.');
+    console.log(`[API-DEBUG] Pinecone retrieval completed. Retrieved ${retrievalResult.retrievedCount} documents`);
+
+    // Check if there was an error in retrieval
+    if (retrievalResult.error) {
+      console.log(`[API-DEBUG] Retrieval contained error:`, retrievalResult.error);
+      return res.status(500).json({
+        error: 'Document retrieval failed',
+        details: retrievalResult.error
+      });
+    }
 
     // Format the results
     const formattedResults = retrievalResult.results.map(result => ({
@@ -84,7 +93,7 @@ app.post('/api/retrieve', async (req, res) => {
       rank: result.rank
     }));
 
-    console.log(`Retrieved ${retrievalResult.retrievedCount} documents`);
+    console.log(`[API-DEBUG] Sending ${formattedResults.length} formatted results to client`);
 
     // Return the retrieved documents
     res.status(200).json({
@@ -92,11 +101,11 @@ app.post('/api/retrieve', async (req, res) => {
       query: query,
       retrievedCount: retrievalResult.retrievedCount
     });
-    console.log('Retrieval results sent to client');
+    console.log('[API-DEBUG] Retrieval results sent to client');
 
   } catch (error) {
-    console.error('Retrieval API Error:', error.message);
-    console.error('Retrieval API Error Stack:', error.stack);
+    console.error('[API-ERROR] Retrieval API Error:', error.message);
+    console.error('[API-ERROR] Retrieval API Error Stack:', error.stack);
 
     res.status(500).json({
       error: 'Internal server error during document retrieval',
@@ -110,31 +119,42 @@ app.post('/api/rag', async (req, res) => {
   const { query } = req.body;
 
   if (!query) {
-    console.log('Query is missing');
+    console.log('[RAG-DEBUG] Query is missing');
     return res.status(400).json({ error: 'Query is required' });
   }
 
   try {
-    console.log(`Received query: ${query}`);
+    console.log(`[RAG-DEBUG] Received query: ${query}`);
 
     // Call the retrieval tool to get relevant documents
-    console.log('Calling retrieval tool...');
+    console.log('[RAG-DEBUG] Calling retrieval tool...');
     const retrievalResult = await retrieveFromPinecone(query);
-    console.log('Retrieval tool completed.');
+    console.log(`[RAG-DEBUG] Retrieval tool completed. Retrieved ${retrievalResult.retrievedCount} documents`);
+
+    // Check if there was an error in retrieval
+    if (retrievalResult.error) {
+      console.log(`[RAG-DEBUG] Retrieval contained error:`, retrievalResult.error);
+      return res.status(500).json({
+        response: "Could not retrieve documents from the knowledge base.",
+        sources: [],
+        retrieved_docs_count: 0,
+        retrieval_error: retrievalResult.error
+      });
+    }
 
     // Format the context from retrieved documents
     const contextText = retrievalResult.results.map(result =>
       `Source: ${result.source}\nContent: ${result.content}`
     ).join('\n\n---\n\n');
 
-    console.log(`Context text length: ${contextText.length}`);
-    console.log(`Retrieved ${retrievalResult.retrievedCount} documents`);
+    console.log(`[RAG-DEBUG] Context text length: ${contextText.length}`);
+    console.log(`[RAG-DEBUG] Retrieved ${retrievalResult.retrievedCount} documents`);
 
     // Create prompt using retrieved context
     const prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
 
     try {
-      console.log('Sending prompt to OpenAI...');
+      console.log('[RAG-DEBUG] Sending prompt to OpenAI...');
       // Use OpenRouter to generate a response based on retrieved context
       const response = await openai.chat.completions.create({
         model: 'meta-llama/llama-3.2-3b-instruct',  // Using Llama 3.2 3B Instruct model from OpenRouter
@@ -154,7 +174,7 @@ app.post('/api/rag', async (req, res) => {
       });
 
       const text = response.choices[0].message.content;
-      console.log('Response generated from OpenAI:', text.substring(0, 100) + '...');
+      console.log('[RAG-DEBUG] Response generated from OpenAI:', text.substring(0, 100) + '...');
 
       // Extract sources from results
       const sources = retrievalResult.results.map(r => r.source);
@@ -165,9 +185,15 @@ app.post('/api/rag', async (req, res) => {
         sources: sources,
         retrieved_docs_count: retrievalResult.retrievedCount
       });
-      console.log('Response sent to client');
+      console.log('[RAG-DEBUG] Response sent to client');
     } catch (openaiError) {
-      console.error('OpenAI API Error:', openaiError.message);
+      console.error('[RAG-ERROR] OpenAI API Error:', openaiError.message);
+      console.error('[RAG-ERROR] OpenAI Error Details:', {
+        type: openaiError.constructor.name,
+        message: openaiError.message,
+        code: openaiError.code,
+        status: openaiError.status
+      });
 
       // In case of OpenAI error, return the retrieved documents only
       res.status(200).json({
@@ -179,8 +205,8 @@ app.post('/api/rag', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('RAG API Error:', error.message);
-    console.error('RAG API Error Stack:', error.stack);
+    console.error('[RAG-ERROR] RAG API Error:', error.message);
+    console.error('[RAG-ERROR] RAG API Error Stack:', error.stack);
 
     // Send detailed error info for debugging
     res.status(500).json({
