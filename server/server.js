@@ -301,9 +301,16 @@ app.post('/api/index-content', async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`RAG endpoint: http://localhost:${PORT}/api/rag`);
-});
+// In Vercel environment, we don't need to listen on a port
+// Vercel automatically handles the server
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  // Only start server in development or if not running on Vercel
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+    console.log(`RAG endpoint: http://localhost:${PORT}/api/rag`);
+  });
+}
+
+// Export the app for Vercel
+module.exports = app;
