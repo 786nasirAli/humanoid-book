@@ -24,22 +24,22 @@ app.use(express.json());
 // Routes
 app.use('/api', userRoutes);
 
-// Initialize OpenRouter client
+// Initialize OpenRouter client with safety checks
 const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: typeof process !== 'undefined' && process.env ? process.env.OPENROUTER_API_KEY : undefined,
   baseURL: 'https://openrouter.ai/api/v1',
 });
 
-// Initialize Pinecone client
+// Initialize Pinecone client with safety checks
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY,
+  apiKey: typeof process !== 'undefined' && process.env ? process.env.PINECONE_API_KEY : undefined,
 });
 
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
+const index = pinecone.Index(typeof process !== 'undefined' && process.env ? process.env.PINECONE_INDEX_NAME : '');
 
-// Initialize Cohere client
+// Initialize Cohere client with safety checks
 const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY,
+  token: typeof process !== 'undefined' && process.env ? process.env.COHERE_API_KEY : undefined,
 });
 
 // Function to generate embedding using Cohere
