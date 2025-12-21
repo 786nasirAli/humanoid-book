@@ -8,11 +8,11 @@ const userRoutes = require('./routes/userRoutes');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;  // Changed from 8000 to 3001 to avoid conflict with Docusaurus
+const PORT = process.env.PORT || 5000;  // Changed from 3001 to 5000 to avoid port conflicts
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8000', 'http://localhost:3001'], // Allow common Docusaurus ports
+  origin: ['http://localhost:3000', 'http://localhost:8000', 'http://localhost:3001', 'http://localhost:5000'], // Allow common Docusaurus ports
   credentials: true
 }));
 app.use(express.json());
