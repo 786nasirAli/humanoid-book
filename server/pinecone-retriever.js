@@ -17,9 +17,9 @@ const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
 async function retrieveFromPinecone(query, topK = 5) {
   try {
     console.log(`[DEBUG] Starting retrieval for query: ${query}`);
-    console.log(`[DEBUG] Pinecone API key: ${process.env.PINECONE_API_KEY ? 'Set' : 'Not set'}`);
-    console.log(`[DEBUG] Pinecone index name: ${process.env.PINECONE_INDEX_NAME}`);
-    console.log(`[DEBUG] Cohere API key: ${process.env.COHERE_API_KEY ? 'Set' : 'Not set'}`);
+    console.log(`[DEBUG] Pinecone API key: ${typeof process !== 'undefined' && process.env ? (process.env.PINECONE_API_KEY ? 'Set' : 'Not set') : 'process undefined'}`);
+    console.log(`[DEBUG] Pinecone index name: ${typeof process !== 'undefined' && process.env ? process.env.PINECONE_INDEX_NAME : 'process undefined'}`);
+    console.log(`[DEBUG] Cohere API key: ${typeof process !== 'undefined' && process.env ? (process.env.COHERE_API_KEY ? 'Set' : 'Not set') : 'process undefined'}`);
 
     // Generate embedding for the query using Cohere
     console.log(`[DEBUG] Generating embedding for query: ${query}`);

@@ -5,7 +5,11 @@ const { Pinecone } = require('@pinecone-database/pinecone');
 const { CohereClient } = require('cohere-ai');
 const { retrieveFromPinecone } = require('./pinecone-retriever');
 const userRoutes = require('./routes/userRoutes');
-require('dotenv').config();
+
+// Only require dotenv in development, Vercel automatically provides environment variables
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;  // Changed from 3001 to 5000 to avoid port conflicts
