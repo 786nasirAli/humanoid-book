@@ -1,17 +1,21 @@
 const { Pinecone } = require('@pinecone-database/pinecone');
 const { CohereClient } = require('cohere-ai');
-require('dotenv').config();
 
-// Initialize clients
+// Only require dotenv in development, Vercel automatically provides environment variables
+if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+// Initialize clients with safety checks
 const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY,
+  token: typeof process !== 'undefined' && process.env ? process.env.COHERE_API_KEY : undefined,
 });
 
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY,
+  apiKey: typeof process !== 'undefined' && process.env ? process.env.PINECONE_API_KEY : undefined,
 });
 
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
+const index = pinecone.Index(typeof process !== 'undefined' && process.env ? process.env.PINECONE_INDEX_NAME : '');
 
 // Function to perform retrieval from Pinecone
 async function retrieveFromPinecone(query, topK = 5) {
