@@ -24,9 +24,8 @@ const RAGChatbot = () => {
     console.log('Analytics event:', event, data);
 
     try {
-      // API call to track analytics - using configurable backend URL
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend.vercel.app';
-      await fetch(`${BACKEND_URL}/api/analytics`, {
+      // API call to track analytics - relative path for Vercel deployment
+      await fetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event, data, timestamp: new Date() })
@@ -50,9 +49,8 @@ const RAGChatbot = () => {
 
       setMessages(prev => [...prev, retrievingMessage]);
 
-      // Call the retrieval API
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend.vercel.app';
-      const response = await fetch(`${BACKEND_URL}/api/retrieve`, {
+      // Call the retrieval API - relative path for Vercel deployment
+      const response = await fetch('/api/retrieve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,8 +104,7 @@ const RAGChatbot = () => {
   // Function to generate response using Gemini with retrieved context
   const generateResponse = async (query, context = null) => {
     try {
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend.vercel.app';
-      const response = await fetch(`${BACKEND_URL}/api/rag`, {
+      const response = await fetch('/api/rag', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,9 +217,8 @@ const RAGChatbot = () => {
     });
 
     try {
-      // Send feedback to backend API - using configurable backend URL
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://humanoid-book-backend.vercel.app';
-      await fetch(`${BACKEND_URL}/api/feedback`, {
+      // Send feedback to backend API - relative path for Vercel deployment
+      await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, feedback, messageText: message.text })

@@ -1,123 +1,151 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { QdrantClient } = require('@qdrant/js-client-rest');
-require('dotenv').config();
+import OpenAI from 'openai';
+import { Pinecone } from '@pinecone-database/pinecone';
+import { CohereClient } from 'cohere-ai';
 
 // Initialize clients
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: 'gemini-pro',
-  generationConfig: {
-    temperature: 0.3,
-    maxOutputTokens: 800,
-    topP: 0.95,
-  }
+const openai = new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
 });
 
-const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL,
-  apiKey: process.env.QDRANT_API_KEY,
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY,
 });
 
-const ragHandler = async (req, res) => {
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY,
+});
+
+const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
+
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { query, context = null } = req.body;
+  const { query } = req.body;
 
   if (!query) {
+    console.log('[RAG-DEBUG] Query is missing');
     return res.status(400).json({ error: 'Query is required' });
   }
 
   try {
-    // Step 1: Search in Qdrant vector database for relevant course content
-    let searchResult;
-    let retrievedDocs = [];
-    let sources = [];
+    console.log(`[RAG-DEBUG] Received query: ${query}`);
 
-    try {
-      // Attempt to search in Qdrant vector database
-      searchResult = await qdrant.scroll("course_content", {
-        limit: 10, // Get top 10 results initially
-        with_payload: true,
-        offset: 0
-      });
-
-      // Simple keyword-based search since we don't have proper embeddings for Gemini
-      // In a real implementation, you would replace this with actual vector search
-      const queryLower = query.toLowerCase();
-      const keywords = queryLower.split(/\s+/).filter(word => word.length > 2); // Remove short words
-
-      let relevantPoints = searchResult.points.filter(point => {
-        if (!point.payload || !point.payload.content) return false;
-
-        const content = point.payload.content.toLowerCase();
-        // Count how many keywords match in the content
-        const matches = keywords.filter(keyword => content.includes(keyword)).length;
-
-        // Only include if at least half the keywords match
-        return matches >= Math.max(1, Math.floor(keywords.length / 2));
-      });
-
-      // Sort by number of keyword matches (descending)
-      relevantPoints.sort((a, b) => {
-        const aMatches = keywords.filter(kw => a.payload.content.toLowerCase().includes(kw)).length;
-        const bMatches = keywords.filter(kw => b.payload.content.toLowerCase().includes(kw)).length;
-        return bMatches - aMatches;
-      });
-
-      // Take top 5 most relevant
-      const topResults = relevantPoints.slice(0, 5);
-
-      // Format retrieved documents for context
-      retrievedDocs = topResults.map((point) => ({
-        content: point.payload.content,
-        source: point.payload.source,
-        module: point.payload.module
-      }));
-
-      sources = retrievedDocs.map(doc => doc.source);
-    } catch (qdrantError) {
-      console.warn('Qdrant connection failed, using fallback response:', qdrantError.message);
-      // Use fallback response when Qdrant is not available
-      retrievedDocs = [{
-        content: "This is a simulated response as the Qdrant vector database is not accessible. In a working implementation, this would contain relevant course content retrieved from the knowledge base.",
-        source: "simulation",
-        module: "fallback"
-      }];
-      sources = ["simulation"];
-    }
-
-    // Step 3: Create a context for the LLM with retrieved documents
-    const contextText = retrievedDocs.map(doc => doc.content).join('\n\n');
-
-    // Step 4: Use Gemini to generate a response based on retrieved context
-    // If using fallback, inform the model
-    let prompt;
-    if (retrievedDocs[0].source === "simulation") {
-      prompt = `Question: ${query}\n\nThe knowledge base is currently unavailable. Please provide a general response about robotics and AI concepts based on your training. If the question is about ROS 2, Gazebo, Unity, NVIDIA Isaac, or Vision-Language-Action systems, acknowledge that these are topics covered in the course but that you cannot access the specific course materials right now.`;
-    } else {
-      prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
-    }
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Step 5: Return the response along with source information
-    res.status(200).json({
-      response: text,
-      sources: sources,
-      retrieved_docs_count: retrievedDocs.length
+    // Generate embedding for the query using Cohere
+    console.log(`[RAG-DEBUG] Generating embedding for query: ${query}`);
+    const response = await cohere.embed({
+      texts: [query],
+      model: 'embed-english-v3.0',
+      inputType: 'search_query',
     });
 
+    const queryEmbedding = response.embeddings[0];
+    console.log(`[RAG-DEBUG] Generated ${queryEmbedding.length}-dimensional embedding`);
+
+    // Query Pinecone for similar vectors
+    console.log(`[RAG-DEBUG] Querying Pinecone index with embedding...`);
+    const queryResponse = await index.query({
+      vector: queryEmbedding,
+      topK: 5,
+      includeMetadata: true,
+    });
+
+    console.log(`[RAG-DEBUG] Pinecone query completed, returned ${queryResponse.matches.length} matches`);
+
+    // Format the results
+    const results = queryResponse.matches.map((match, index) => {
+      console.log(`[RAG-DEBUG] Processing match ${index + 1}: ID=${match.id}, Score=${match.score}`);
+      return {
+        id: match.id,
+        content: match.metadata?.content || '',
+        source: match.metadata?.source || '',
+        score: match.score,
+        rank: index + 1
+      };
+    });
+
+    console.log(`[RAG-DEBUG] Context before formatting: ${results.length} documents`);
+
+    // Format the context from retrieved documents
+    const contextText = results.map(result =>
+      `Source: ${result.source}\nContent: ${result.content}`
+    ).join('\n\n---\n\n');
+
+    console.log(`[RAG-DEBUG] Context text length: ${contextText.length}`);
+    console.log(`[RAG-DEBUG] Retrieved ${results.length} documents`);
+
+    // Create prompt using retrieved context
+    const prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
+
+    try {
+      console.log('[RAG-DEBUG] Sending prompt to OpenAI...');
+      // Use OpenRouter to generate a response based on retrieved context
+      const response = await openai.chat.completions.create({
+        model: 'meta-llama/llama-3.2-3b-instruct',  // Using Llama 3.2 3B Instruct model from OpenRouter
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant for the Physical AI & Humanoid Robotics course. Use the provided context to answer questions accurately and reference the relevant modules when possible. Be concise but comprehensive.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.3,
+        top_p: 0.95,
+      });
+
+      const text = response.choices[0].message.content;
+      console.log('[RAG-DEBUG] Response generated from OpenAI:', text.substring(0, 100) + '...');
+
+      // Extract sources from results
+      const sources = results.map(r => r.source);
+
+      // Return the response along with source information
+      res.status(200).json({
+        response: text,
+        sources: sources,
+        retrieved_docs_count: results.length
+      });
+      console.log('[RAG-DEBUG] Response sent to client');
+    } catch (openaiError) {
+      console.error('[RAG-ERROR] OpenAI API Error:', openaiError.message);
+      console.error('[RAG-ERROR] OpenAI Error Details:', {
+        type: openaiError.constructor.name,
+        message: openaiError.message,
+        code: openaiError.code,
+        status: openaiError.status
+      });
+
+      // In case of OpenAI error, return the retrieved documents only
+      res.status(200).json({
+        response: "Could not generate a response due to an API error, but here are some relevant documents:",
+        sources: results.map(r => r.source),
+        retrieved_docs_count: results.length,
+        fallback_context: results.map(r => r.content).join('\n\n')
+      });
+    }
+
   } catch (error) {
-    console.error('RAG API Error:', error);
+    console.error('[RAG-ERROR] RAG API Error:', error.message);
+    console.error('[RAG-ERROR] RAG API Error Stack:', error.stack);
+
+    // Send detailed error info for debugging
     res.status(500).json({
       error: 'Internal server error during RAG processing',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-};
+}
 
-export default ragHandler;
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};

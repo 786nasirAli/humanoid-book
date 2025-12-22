@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "functions": {
+    "api/rag.js": {
+      "memory": 1024,
+      "timeout": 60
+    },
+    "api/retrieve.js": {
+      "memory": 1024,
+      "timeout": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    }
+  ]
+}
