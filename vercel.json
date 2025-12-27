@@ -2,12 +2,10 @@
   "version": 2,
   "functions": {
     "api/rag.js": {
-      "memory": 1024,
-      "timeout": 60
+      "memory": 1024
     },
     "api/retrieve.js": {
-      "memory": 1024,
-      "timeout": 60
+      "memory": 1024
     }
   },
   "rewrites": [
