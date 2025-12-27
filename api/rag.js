@@ -2,21 +2,27 @@ import OpenAI from 'openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { CohereClient } from 'cohere-ai';
 
-// Initialize clients
+// Initialize clients with environment variable checks
+console.log('[INIT-DEBUG] Environment variables check:');
+console.log('[INIT-DEBUG] OPENROUTER_API_KEY available:', !!process.env.OPENROUTER_API_KEY);
+console.log('[INIT-DEBUG] COHERE_API_KEY available:', !!process.env.COHERE_API_KEY);
+console.log('[INIT-DEBUG] PINECONE_API_KEY available:', !!process.env.PINECONE_API_KEY);
+console.log('[INIT-DEBUG] PINECONE_INDEX_NAME:', process.env.PINECONE_INDEX_NAME);
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY || '',
   baseURL: 'https://openrouter.ai/api/v1',
 });
 
 const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY,
+  token: process.env.COHERE_API_KEY || '',
 });
 
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY,
+  apiKey: process.env.PINECONE_API_KEY || '',
 });
 
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME);
+const index = pinecone.Index(process.env.PINECONE_INDEX_NAME || '');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
