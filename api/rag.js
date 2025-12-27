@@ -80,7 +80,7 @@ export default async function handler(req, res) {
     const prompt = `Context: ${contextText}\n\nQuestion: ${query}\n\nPlease provide a helpful answer based on the context. If the context doesn't contain relevant information, please say so and suggest where the user might find the information in the course.`;
 
     try {
-      console.log('[RAG-DEBUG] Sending prompt to OpenAI...');
+      console.log('[RAG-DEBUG] Sending prompt to OpenRouter...');
       // Use OpenRouter to generate a response based on retrieved context
       const response = await openai.chat.completions.create({
         model: 'meta-llama/llama-3.2-3b-instruct',  // Using Llama 3.2 3B Instruct model from OpenRouter
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
       });
 
       const text = response.choices[0].message.content;
-      console.log('[RAG-DEBUG] Response generated from OpenAI:', text.substring(0, 100) + '...');
+      console.log('[RAG-DEBUG] Response generated from OpenRouter:', text.substring(0, 100) + '...');
 
       // Extract sources from results
       const sources = results.map(r => r.source);
@@ -113,20 +113,28 @@ export default async function handler(req, res) {
       });
       console.log('[RAG-DEBUG] Response sent to client');
     } catch (openaiError) {
-      console.error('[RAG-ERROR] OpenAI API Error:', openaiError.message);
-      console.error('[RAG-ERROR] OpenAI Error Details:', {
+      console.error('[RAG-ERROR] OpenRouter API Error:', openaiError.message);
+      console.error('[RAG-ERROR] OpenRouter Error Details:', {
         type: openaiError.constructor.name,
         message: openaiError.message,
         code: openaiError.code,
-        status: openaiError.status
+        status: openaiError.status,
+        url: openaiError.url,
+        response_status: openaiError.status
       });
 
-      // In case of OpenAI error, return the retrieved documents only
+      // Log more details about the error for debugging
+      if (openaiError.error) {
+        console.error('[RAG-ERROR] OpenRouter specific error:', openaiError.error);
+      }
+
+      // In case of OpenRouter error, return the retrieved documents only
       res.status(200).json({
         response: "Could not generate a response due to an API error, but here are some relevant documents:",
         sources: results.map(r => r.source),
         retrieved_docs_count: results.length,
-        fallback_context: results.map(r => r.content).join('\n\n')
+        fallback_context: results.map(r => r.content).join('\n\n'),
+        error_details: process.env.NODE_ENV === 'development' ? openaiError.message : 'API error occurred'
       });
     }
 
