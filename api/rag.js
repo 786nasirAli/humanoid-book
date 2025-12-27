@@ -81,6 +81,11 @@ export default async function handler(req, res) {
 
     try {
       console.log('[RAG-DEBUG] Sending prompt to OpenRouter...');
+      console.log('[RAG-DEBUG] API Key available:', !!process.env.OPENROUTER_API_KEY);
+      console.log('[RAG-DEBUG] Model:', 'meta-llama/llama-3.2-3b-instruct');
+      console.log('[RAG-DEBUG] Prompt length:', prompt.length);
+      console.log('[RAG-DEBUG] Prompt (first 200 chars):', prompt.substring(0, 200) + '...');
+
       // Use OpenRouter to generate a response based on retrieved context
       const response = await openai.chat.completions.create({
         model: 'meta-llama/llama-3.2-3b-instruct',  // Using Llama 3.2 3B Instruct model from OpenRouter
@@ -99,19 +104,28 @@ export default async function handler(req, res) {
         top_p: 0.95,
       });
 
-      const text = response.choices[0].message.content;
-      console.log('[RAG-DEBUG] Response generated from OpenRouter:', text.substring(0, 100) + '...');
+      console.log('[RAG-DEBUG] Response received from OpenRouter');
+      console.log('[RAG-DEBUG] Response choices length:', response.choices ? response.choices.length : 'undefined');
 
-      // Extract sources from results
-      const sources = results.map(r => r.source);
+      if (response.choices && response.choices.length > 0) {
+        const text = response.choices[0].message.content;
+        console.log('[RAG-DEBUG] Response content available, length:', text.length);
+        console.log('[RAG-DEBUG] Response content (first 100 chars):', text.substring(0, 100) + '...');
 
-      // Return the response along with source information
-      res.status(200).json({
-        response: text,
-        sources: sources,
-        retrieved_docs_count: results.length
-      });
-      console.log('[RAG-DEBUG] Response sent to client');
+        // Extract sources from results
+        const sources = results.map(r => r.source);
+
+        // Return the response along with source information
+        res.status(200).json({
+          response: text,
+          sources: sources,
+          retrieved_docs_count: results.length
+        });
+        console.log('[RAG-DEBUG] Response sent to client');
+      } else {
+        console.error('[RAG-ERROR] No choices in response from OpenRouter');
+        throw new Error('No choices in OpenRouter response');
+      }
     } catch (openaiError) {
       console.error('[RAG-ERROR] OpenRouter API Error:', openaiError.message);
       console.error('[RAG-ERROR] OpenRouter Error Details:', {
