@@ -55,6 +55,21 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Setup Guides',
+      items: [
+        'setup-guides/quickstart_validation',
+        'setup-guides/physics-setup',
+        'setup-guides/digital-twin-setup',
+        'setup-guides/sensor-simulation',
+        'setup-guides/synchronization',
+        'setup-guides/unity-visualization',
+        'setup-guides/asset-optimization',
+        'setup-guides/performance-optimization',
+        'setup-guides/speed-insights-getting-started',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Course Support',
       items: [
         'about/using-chatbot',
